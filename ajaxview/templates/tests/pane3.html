@@ -1,0 +1,6 @@
+pane3-content -
+<form action="{{ current_pane.get_url }}" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit">
+</form>

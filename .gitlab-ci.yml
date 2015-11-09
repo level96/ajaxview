@@ -1,0 +1,19 @@
+before_script:
+  - uname -r
+
+types:
+  - build
+  - test
+
+job_install:
+  type: build
+  script:
+    - whoami
+    - docker build -t tphan/ajaxview .
+
+job_test:
+  type: test
+  script:
+    - docker --version
+    - docker run -i --rm tphan/ajaxview:latest /app/run_tests.sh
+    # - docker rmi $(docker images -q -f dangling=true) 2>&1 >/dev/null

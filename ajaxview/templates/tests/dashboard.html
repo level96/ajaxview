@@ -1,0 +1,24 @@
+{% extends 'tests/base.html' %}
+
+{% block content %}
+dashboard
+
+# ajax urls<br/>
+<ul>
+{% for name, view in views.items %}
+<li>{{name }}: {{ view.get_url }} - </li>
+{% endfor %}
+</ul>
+
+# rendered views<br/>
+<ul>
+{% for name, view in views.items %}
+<li>{{name }}: {{ view.render }} </li>
+{% endfor %}
+</ul>
+
+<p># view by id</p>
+<p>pane1: {{ views.pane1.render }}</p>
+<p>pane2 {{ views.pane2.render }}</p>
+
+{% endblock %}
