@@ -16,4 +16,4 @@ job_test:
   script:
     - docker --version
     - docker run -i --rm tphan/ajaxview:latest /app/run_tests.sh
-    # - docker rmi $(docker images -q -f dangling=true) 2>&1 >/dev/null
+    - docker rmi $(docker images -q -f dangling=true) 2>&1 >/dev/null || true
