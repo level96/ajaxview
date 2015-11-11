@@ -2,8 +2,8 @@ language: python
 python:
   - "2.7"
 # command to install dependencies
-install: "pip install -r requirements.txt"
+install: "pip -q install -r requirements.txt"
 # command to run tests
 script:
-  coverage run -a --source="." manage.py test ajaxview
-  coverage report
+  - coverage run -a --source="." manage.py test ajaxview
+  - coverage report
