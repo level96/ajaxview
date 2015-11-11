@@ -3,6 +3,13 @@
 {% block content %}
 dashboard
 
+<p>
+    <form method="post" action="." novalidate>dashboard_form: #{{ dashboard_form }}
+        {% csrf_token %}
+        <input type="submit">
+    </form>
+</p>
+
 # ajax urls<br/>
 <ul>
 {% for name, view in views.items %}

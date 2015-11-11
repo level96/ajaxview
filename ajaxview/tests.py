@@ -50,6 +50,18 @@ class DashboardView(AbstractView):
             }
         )
 
+    def get(self, request):
+        self.context.update({
+            'dashboard_form': NameForm()
+        })
+        return super(DashboardView, self).get(request)
+
+    def post(self, request):
+        self.context.update({
+            'dashboard_form': NameForm(request.POST)
+        })
+        return super(DashboardView, self).post(request)
+
 
 class AbstractViewTestCase(LiveServerTestCase):
     def setUp(self):
@@ -84,7 +96,39 @@ class AbstractViewTestCase(LiveServerTestCase):
             self.resp.content
         )
 
+    def test_pane_call(self):
+        self.resp = self.client.get('/test/?pane=1')
+        self.assertTrue('pane1-content' in self.resp.content)
+
+        self.resp = self.client.get('/test/?pane=2')
+        self.assertTrue('pane2-content' in self.resp.content)
+
+        self.resp = self.client.get('/test/?pane=3')
+        self.assertTrue('pane3-content' in self.resp.content)
+
     def test_pane_post(self):
-        # Panes rendered content
-        pass
-        # self.assertTrue('additional_context1' in self.resp.content)
+        # Post on a pane
+        self.resp = self.client.post('/test/?pane=pane3', {})
+        self.assertTrue('pane3-content' in self.resp.content)
+        self.assertTrue('errorlist' in self.resp.content)
+
+        self.resp = self.client.post(
+            '/test/?pane=pane3',
+            {'your_name': 'invalid'}
+        )
+        self.assertTrue('pane3-content' in self.resp.content)
+        self.assertTrue('Mail' in self.resp.content)
+
+    def test_post(self):
+        self.resp = self.client.post('/test/', {})
+        self.assertTrue('base.html' in self.resp.content)
+        self.assertTrue('dashboard' in self.resp.content)
+        self.assertTrue('errorlist' in self.resp.content)
+
+        self.resp = self.client.post(
+            '/test/',
+            {'your_name': 'invalid'}
+        )
+        self.assertTrue('base.html' in self.resp.content)
+        self.assertTrue('dashboard' in self.resp.content)
+        self.assertTrue('Mail' in self.resp.content)
