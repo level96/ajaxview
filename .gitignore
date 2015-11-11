@@ -62,3 +62,4 @@ target/
 .idea
 /converter/static/admin/
 /converter/static/rest_framework/
+.DS_Store
