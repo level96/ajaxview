@@ -6,5 +6,4 @@ install: "pip install -r requirements.txt"
 # command to run tests
 script:
   coverage run -a --source="." manage.py test ajaxview
-after_success:
   coverage report
