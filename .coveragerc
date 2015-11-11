@@ -9,6 +9,7 @@ omit =
     *urls.py
     *settings.py
     manage.py
+    setup.py
     *tests.py
 
 
