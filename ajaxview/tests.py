@@ -5,65 +5,60 @@ from django.test import LiveServerTestCase
 from django.test import Client
 from django import forms
 
-from ajaxview.views import AbstractView
-from ajaxview.views import AbstractPane
+from ajaxview.views import Page
+from ajaxview.views import View
 
 
 class NameForm(forms.Form):
-    your_name = forms.EmailField(label='Your name')
+    email = forms.EmailField(label='Your name')
 
 
-class DashboardPane1(AbstractPane):
-    def get(self):
-        self.context.update({
+class DashboardView(View):
+    def get_context_data(self, request):
+        return {
             'additional_context': 'additional_context1'
-        })
-        return super(DashboardPane1, self).get(self.request)
+        }
 
 
-class DashboardPane3(AbstractPane):
-    def get(self):
-        self.context.update({
+class DashboardView3(View):
+    def get_context_data(self, request):
+        return {
             'form': NameForm()
-        })
-        return super(DashboardPane3, self).get()
+        }
 
-    def post(self):
+    def post_context_data(self, request):
         form = NameForm(self.request.POST)
         form.is_valid()
 
-        self.context.update({
+        return {
             'form': form
-        })
-        return super(DashboardPane3, self).post()
+        }
 
 
-class DashboardView(AbstractView):
+class DashboardPage(Page):
     def __init__(self, *args, **kwargs):
-        super(DashboardView, self).__init__(
+        super(DashboardPage, self).__init__(
             template_name="tests/dashboard.html",
             url='test',
-            panes={
-                'pane1': DashboardPane1(template_name='tests/pane1.html'),
-                'pane2': DashboardPane1(template_name='tests/pane2.html'),
-                'pane3': DashboardPane3(template_name='tests/pane3.html')
+            views={
+                'view1': DashboardView(template_name='tests/view1.html'),
+                'view2': DashboardView(template_name='tests/view2.html'),
+                'view3': DashboardView3(template_name='tests/view3.html')
             }
         )
 
-    def get(self, request):
-        self.context.update({
+    def get_context_data(self, request):
+        return {
             'dashboard_form': NameForm()
-        })
-        return super(DashboardView, self).get(request)
+        }
 
-    def post(self, request):
-        self.context.update({
+    def post_context_data(self, request):
+        return {
             'dashboard_form': NameForm(request.POST)
-        })
-        return super(DashboardView, self).post(request)
+        }
 
 
-class AbstractViewTestCase(LiveServerTestCase):
+class PageTestCase(LiveServerTestCase):
     def setUp(self):
         self.client = Client()
         self.url = "/test/"
@@ -75,48 +70,48 @@ class AbstractViewTestCase(LiveServerTestCase):
         # Dashboard
         self.assertTrue('dashboard' in self.resp.content)
 
-    def test_pane_urls(self):
-        # Panes urls
-        self.assertTrue('?pane=pane1' in self.resp.content)
-        self.assertTrue('?pane=pane2' in self.resp.content)
+    def test_view_urls(self):
+        # views urls
+        self.assertTrue('?view=view1' in self.resp.content)
+        self.assertTrue('?view=view2' in self.resp.content)
 
-    def test_pane_rendered(self):
-        # Panes rendered content
-        self.assertTrue('pane1-content' in self.resp.content)
-        self.assertTrue('pane2-content' in self.resp.content)
+    def test_view_rendered(self):
+        # views rendered content
+        self.assertTrue('view1-content' in self.resp.content)
+        self.assertTrue('view2-content' in self.resp.content)
 
-    def test_pane_context(self):
-        # Panes rendered content
+    def test_view_context(self):
+        # views rendered content
         self.assertTrue('additional_context1' in self.resp.content)
 
-    def test_ajax_pane(self):
-        self.resp = self.client.get('/test/?pane=pane1')
+    def test_ajax_view(self):
+        self.resp = self.client.get('/test/?view=view1')
         self.assertEqual(
-            'pane1-content - additional_context1\n/test/?pane=pane1',
+            'view1-content - additional_context1\n/test/?view=view1',
             self.resp.content
         )
 
-    def test_pane_call(self):
-        self.resp = self.client.get('/test/?pane=1')
-        self.assertTrue('pane1-content' in self.resp.content)
+    def test_view_call(self):
+        self.resp = self.client.get('/test/?view=1')
+        self.assertTrue('view1-content' in self.resp.content)
 
-        self.resp = self.client.get('/test/?pane=2')
-        self.assertTrue('pane2-content' in self.resp.content)
+        self.resp = self.client.get('/test/?view=2')
+        self.assertTrue('view2-content' in self.resp.content)
 
-        self.resp = self.client.get('/test/?pane=3')
-        self.assertTrue('pane3-content' in self.resp.content)
+        self.resp = self.client.get('/test/?view=3')
+        self.assertTrue('view3-content' in self.resp.content)
 
-    def test_pane_post(self):
-        # Post on a pane
-        self.resp = self.client.post('/test/?pane=pane3', {})
-        self.assertTrue('pane3-content' in self.resp.content)
+    def test_view_post(self):
+        # Post on a view
+        self.resp = self.client.post('/test/?view=view3', {})
+        self.assertTrue('view3-content' in self.resp.content)
         self.assertTrue('errorlist' in self.resp.content)
 
         self.resp = self.client.post(
-            '/test/?pane=pane3',
-            {'your_name': 'invalid'}
+            '/test/?view=view3',
+            {'email': 'invalid'}
         )
-        self.assertTrue('pane3-content' in self.resp.content)
+        self.assertTrue('view3-content' in self.resp.content)
         self.assertTrue('Mail' in self.resp.content)
 
     def test_post(self):
@@ -127,7 +122,7 @@ class AbstractViewTestCase(LiveServerTestCase):
 
         self.resp = self.client.post(
             '/test/',
-            {'your_name': 'invalid'}
+            {'email': 'invalid'}
         )
         self.assertTrue('base.html' in self.resp.content)
         self.assertTrue('dashboard' in self.resp.content)

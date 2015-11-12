@@ -1,0 +1,6 @@
+view3-content -
+<form action="{{ current_view.get_url }}" method="post" novalidate>
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit">
+</form>
