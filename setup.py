@@ -19,7 +19,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.1.0',
+    version='0.2.0',
 
     description='tphan ajaxview',
     long_description=long_description,
@@ -71,7 +71,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['django<1.7'],
+    install_requires=['django<1.9'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,

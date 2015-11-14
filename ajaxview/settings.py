@@ -103,3 +103,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'ajaxview', 'static')
+
+
+# LOGIN_REDIRECT_URL = '/test/'
+LOGIN_URL = '/test-not-login/'
