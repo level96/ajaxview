@@ -2,8 +2,10 @@
 
 from django.views.generic import TemplateView
 from django.shortcuts import render
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponse
 from django.utils.safestring import mark_safe
+from django.template.loader import get_template
+from django.template import RequestContext, loader
 
 VIEW_IDENTIFIER = 'view'
 
@@ -86,12 +88,14 @@ class AjaxView(object):
             self.name
         )
 
-    def render(self):
-        return mark_safe(self.get(self.request).content)
+    def render(self, *args, **kwargs):
+        self.context.update(self.get_context_data(*args, **kwargs))
+        return loader.get_template(self.template_name).render(
+            RequestContext(self.request, self.context)
+        )
 
     def get(self, request, *args, **kwargs):
-        self.context.update(self.get_context_data(*args, **kwargs))
-        return render(request, self.template_name, self.context)
+        return HttpResponse(self.render())
 
     def post(self, request, *args, **kwargs):
         raise NotImplementedError('This function is not implemented now')
