@@ -91,6 +91,10 @@ class PageTestCase(LiveServerTestCase):
         self.assertTrue('view1' in self.resp.content)
         self.assertTrue('view2' in self.resp.content)
 
+    def test_unicode_rendered(self):
+        content = self.resp.content.decode("utf-8")
+        self.assertTrue(u"öäüß" in content)
+
     def test_view_context(self):
         # views rendered content
         self.assertTrue('additional_context1' in self.resp.content)
