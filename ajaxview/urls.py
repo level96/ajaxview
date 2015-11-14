@@ -15,9 +15,13 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
-from ajaxview.tests import DashboardView
+from django.contrib.auth.decorators import login_required
+
+from ajaxview.tests import DashboardPage, LoginDashboardPage, NotLoggedIPage
 
 urlpatterns = [
-    url(r'^test/', DashboardView.as_view(), name='test'),
+    url(r'^test/', DashboardPage.as_view(), name='test'),
+    url(r'^test-login-required/', login_required(LoginDashboardPage.as_view()), name='test-login-required'),
+    url(r'^test-not-login/', NotLoggedIPage.as_view(), name='test-not-login'),
     url(r'^admin/', include(admin.site.urls)),
 ]

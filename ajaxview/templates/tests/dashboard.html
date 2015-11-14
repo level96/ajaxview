@@ -3,29 +3,32 @@
 {% block content %}
 dashboard
 
-<p>
-    <form method="post" action="." novalidate>dashboard_form: #{{ dashboard_form }}
-        {% csrf_token %}
-        <input type="submit">
-    </form>
-</p>
+<h2>ajax urls</h2>
+<table class="table table-condensed">
+  <thead>
+  <tr>
+    <td>Name</td>
+    <td>Title</td>
+    <td>URL</td>
+  </tr>
+  </thead>
+  <tbody>
+    {% for name, view in views.items %}
+    <tr>
+      <td>{{ name }}</td>
+      <td>{{ view.title }}</td>
+      <td><a href="{{ view.get_url }}">{{ view.get_url }}</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 
-# ajax urls<br/>
-<ul>
+<h2>rendered views</h2>
 {% for name, view in views.items %}
-<li>{{name }}: {{ view.get_url }} - </li>
+{{ view.render }}
 {% endfor %}
-</ul>
 
-# rendered views<br/>
-<ul>
-{% for name, view in views.items %}
-<li>{{name }}: {{ view.render }} </li>
-{% endfor %}
-</ul>
-
-<p># view by id</p>
-<p>pane1: {{ views.pane1.render }}</p>
-<p>pane2 {{ views.pane2.render }}</p>
-
+<h2>view by id</h2>
+{{ views.view1.render }}
+{{ views.view2.render }}
 {% endblock %}
