@@ -3,8 +3,6 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render
 from django.http import HttpResponseBadRequest, HttpResponse
-from django.utils.safestring import mark_safe
-from django.template.loader import get_template
 from django.template import RequestContext, loader
 
 VIEW_IDENTIFIER = 'view'
@@ -28,7 +26,7 @@ class Page(TemplateView):
 
     def __setup_views(self, request):
         for name, view in self.views.items():
-            view.set_up(request, name, self)
+            view.set_up(request, name)
 
         self.url = request.path
 
@@ -37,6 +35,8 @@ class Page(TemplateView):
 
     def get(self, request, *args, **kwargs):
         self.__setup_views(request)
+
+        self.request = request
         ajax_view = request.GET.get(VIEW_IDENTIFIER, None)
         if ajax_view and ajax_view in self.views:
             if not request.is_ajax():
@@ -65,18 +65,15 @@ class AjaxView(object):
     request = {}
     context = {}
 
-    def __init__(self, template_name=None, title='', *args, **kwargs):
+    def __init__(self, page, template_name='', title='', *args, **kwargs):
         if template_name:
             self.template_name = template_name
-        self.title = title
-        self.context = {
-            'self': self,
-            'title': self.title
-        }
-
-    def set_up(self, request, name, page):
-        self.request = request
         self.page = page
+        self.title = title
+        self.context = {'self': self}
+
+    def set_up(self, request, name):
+        self.request = request
         self.name = name
         if not self.title:
             self.title = name
@@ -88,14 +85,18 @@ class AjaxView(object):
             self.name
         )
 
-    def render(self, *args, **kwargs):
+    def get_context_data(self):
+        return {}
+
+    def content(self, *args, **kwargs):
         self.context.update(self.get_context_data(*args, **kwargs))
         return loader.get_template(self.template_name).render(
             RequestContext(self.request, self.context)
+            # self.context
         )
 
     def get(self, request, *args, **kwargs):
-        return HttpResponse(self.render())
+        return HttpResponse(self.content())
 
     def post(self, request, *args, **kwargs):
         raise NotImplementedError('This function is not implemented now')

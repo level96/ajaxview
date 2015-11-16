@@ -3,7 +3,15 @@
 {% block content %}
 dashboard
 
-<h2>ajax urls</h2>
+<h2>Page Context: {{ page_context }}</h2>
+
+<h2>Static/Media</h2>
+<ul>
+  <li>Static: {{ STATIC_URL }}</li>
+  <li>Media: {{ MEDIA_URL }}</li>
+</ul>
+
+<h2>Ajax Urls</h2>
 <table class="table table-condensed">
   <thead>
   <tr>
@@ -23,12 +31,20 @@ dashboard
   </tbody>
 </table>
 
-<h2>rendered views</h2>
+<h2>Ajax Loaded Views</h2>
 {% for name, view in views.items %}
-{{ view.render }}
+<div class="ajax-view" data-url="{{ view.get_url }}"></div>
 {% endfor %}
 
-<h2>view by id</h2>
-{{ views.view1.render }}
-{{ views.view2.render }}
+
+<h2>Rendered Views</h2>
+{% for name, view in views.items %}
+{{ view.content }}
+{% endfor %}
+
+<h2>View accessed/rendered by Id</h2>
+{{ views.view1.content }}
+{{ views.view2.content }}
+{{ views.view3.content }}
 {% endblock %}
+

@@ -14,19 +14,20 @@ from ajaxview.views import AjaxView
 class NameForm(forms.Form):
     email = forms.EmailField(label='E-Mail')
 
+    class Media:
+        # css = {'all': ('pretty.css',)}
+        js = ('ajaxview/js/bootstrap.min.js', )
+
 
 class DashboardView1(AjaxView):
     def get_context_data(self):
         return {
-            'additional_context': 'additional_context1'
+            'additional_context': 'this is a content of additional_context'
         }
 
 
 class DashboardView2(AjaxView):
     template_name = 'tests/view2.html'
-
-    def get_context_data(self):
-        return {}
 
 
 class FormView(AjaxView, FormMixin):
@@ -49,16 +50,22 @@ class FormView(AjaxView, FormMixin):
 class DashboardPage(Page):
     def __init__(self, *args, **kwargs):
         view1 = DashboardView1(
+            page=self,
             template_name='tests/view1.html',
             title=u"Übersichts-Seite"
         )
-        view2 = DashboardView2(title=u"Übersichts-Seite 2")
-        view3 = FormView(template_name='tests/view3.html')
+        view2 = DashboardView2(page=self, title=u"Übersichts-Seite 2")
+        view3 = FormView(page=self, template_name='tests/view3.html')
 
         super(DashboardPage, self).__init__(
             template_name="tests/dashboard.html",
             views={'view1': view1, 'view2': view2, 'view3': view3}
         )
+
+    def get_context_data(self, *args, **kwargs):
+        return {
+            'page_context': 'content of page_context'
+        }
 
 
 class LoginDashboardPage(Page):
@@ -69,69 +76,91 @@ class NotLoggedIPage(Page):
     template_name = "tests/not-logged-in.html"
 
 
-class PageTestCase(LiveServerTestCase):
+class PageViewTestCase(LiveServerTestCase):
     def setUp(self):
         self.client = Client()
         self.url = "/test/"
-        self.resp = self.client.get('/test/')
-
-    def test_dashboard_inherit(self):
-        self.assertTrue('base.html' in self.resp.content)
-
-        # Dashboard
-        self.assertTrue('dashboard' in self.resp.content)
-
-    def test_view_urls(self):
-        # views urls
-        self.assertTrue('?view=view1' in self.resp.content)
-        self.assertTrue('?view=view2' in self.resp.content)
-
-    def test_view_rendered(self):
-        # views rendered content
-        self.assertTrue('view1' in self.resp.content)
-        self.assertTrue('view2' in self.resp.content)
-
-    def test_unicode_rendered(self):
-        content = self.resp.content.decode("utf-8")
-        self.assertTrue(u"öäüß" in content)
-
-    def test_view_context(self):
-        # views rendered content
-        self.assertTrue('additional_context1' in self.resp.content)
-
-    def test_ajax_view(self):
-        resp = self.client.get(
+        self.page = self.client.get('/test/')
+        self.view1_resp = self.client.get(
             '/test/?view=view1',
             HTTP_X_REQUESTED_WITH='XMLHttpRequest'
         )
-        self.assertTrue('additional_context1' in resp.content)
+        self.view2_resp = self.client.get(
+            '/test/?view=view2',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+        )
+        self.view3_resp = self.client.get(
+            '/test/?view=view3',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+        )
+
+    def test_dashboard_inherit(self):
+        self.assertTrue('base.html' in self.page.content)
+        # Dashboard
+        self.assertTrue('dashboard' in self.page.content)
+
+    def test_page_post_not_supported(self):
+        resp = self.client.post('/test/', {})
+        self.assertEqual(resp.status_code, 400)
+
+    def test_page_unicode_rendered(self):
+        content = self.page.content.decode("utf-8")
+        self.assertTrue(u"öäüß" in content)
+
+    def test_page_view_urls(self):
+        # views urls
+        self.assertTrue('?view=view1' in self.page.content)
+        self.assertTrue('?view=view2' in self.page.content)
+        self.assertTrue('?view=view3' in self.page.content)
+
+    def test_page_context(self):
+        # views rendered content
+        self.assertTrue('content of page_context' in self.page.content)
+
+    def test_view_rendered(self):
+        # views rendered content
+        self.assertTrue('view1' in self.page.content)
+        self.assertTrue('view2' in self.page.content)
+        self.assertTrue('view3' in self.page.content)
+
+    def test_page_view_context(self):
+        # views rendered content
+        self.assertTrue('additional_context' in self.page.content)
+
+    def test_page_static_url_available(self):
+        self.assertTrue('/static/' in self.page.content)
+
+    def test_page_media_url_available(self):
+        self.assertTrue('/media/' in self.page.content)
+
+    def test_ajax_view(self):
+        self.assertTrue('additional_context' in self.view1_resp.content)
 
     def test_view_call(self):
         resp = self.client.get('/test/?view=view1')
         self.assertEqual(resp.status_code, 400)
 
-        resp = self.client.get(
-            '/test/?view=view1',
-            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
-        )
-        self.assertEqual(resp.status_code, 200)
-        self.assertTrue('view1' in resp.content)
+        self.assertEqual(self.view1_resp.status_code, 200)
+        self.assertTrue('view1' in self.view1_resp.content)
+        self.assertTrue('view2' in self.view2_resp.content)
+        self.assertTrue('view3' in self.view3_resp.content)
 
-        resp = self.client.get(
-            '/test/?view=view2',
-            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
-        )
-        self.assertTrue('view2' in resp.content)
+    def test_view_unicode_rendered(self):
+        content = self.view1_resp.content.decode("utf-8")
+        self.assertTrue(u"öäüß" in content)
 
-        resp = self.client.get(
-            '/test/?view=view3',
-            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
-        )
-        self.assertTrue('view3' in resp.content)
+    def test_view2_media_static(self):
+        # Media is available
+        self.assertTrue('/static/' in self.view2_resp.content)
+        # Media is available
+        self.assertTrue('/media/' in self.view2_resp.content)
 
-    def test_page_post_not_supported(self):
-        resp = self.client.post('/test/', {})
-        self.assertEqual(resp.status_code, 400)
+    def test_view3_csrftoken(self):
+        self.assertTrue('csrfmiddlewaretoken' in self.view3_resp.content)
+
+    def test_view3_form_media(self):
+        static_url = '/static/ajaxview/js/bootstrap.min.js'
+        self.assertTrue(static_url in self.view3_resp.content)
 
     def test_view_post_bad_request(self):
         resp = self.client.post('/test/?view=view3', {})
