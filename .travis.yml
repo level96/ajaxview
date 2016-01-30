@@ -7,5 +7,5 @@ install:
   - pip install coveralls
 # command to run tests
 script:
-  - coverage run -a --source="." manage.py test ajaxview
+  - coverage run -a --source="." py.test ajaxview
   - coveralls
