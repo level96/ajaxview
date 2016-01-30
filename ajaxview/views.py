@@ -2,8 +2,10 @@
 
 from django.views.generic import TemplateView
 from django.shortcuts import render
-from django.http import HttpResponseBadRequest, HttpResponse
-from django.template import RequestContext, loader
+from django.http import HttpResponseBadRequest
+from django.http import HttpResponse
+from django.template import RequestContext
+from django.template import loader
 
 VIEW_IDENTIFIER = 'view'
 
